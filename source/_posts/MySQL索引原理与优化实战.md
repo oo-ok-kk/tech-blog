@@ -5,7 +5,7 @@ tags:
   - MySQL
   - 数据库
   - 性能优化
-cover: /images/mysql-index.jpg
+cover: /images/mysql.jpg
 ---
 
 数据库查询性能一直是后端开发的核心问题，而索引是提升查询性能的最有效手段。本文深入探讨 MySQL 索引的底层原理，帮助你从根子上理解如何高效使用索引。
