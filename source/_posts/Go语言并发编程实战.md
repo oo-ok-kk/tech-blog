@@ -5,7 +5,7 @@ tags:
   - Go
   - 并发
   -  Goroutine
-cover: https://images.unsplash.com/photo-1550439062-609e1531270e?w=800
+cover: https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800
 ---
 
 Go 语言以其简洁的并发模型著称，goroutine 和 channel 让并发编程变得优雅而高效。本文通过实战案例深入讲解 Go 的并发编程。

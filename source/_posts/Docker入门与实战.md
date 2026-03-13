@@ -5,7 +5,7 @@ tags:
   - Docker
   - 容器
   - DevOps
-cover: /images/docker.jpg
+cover: https://images.unsplash.com/photo-1605745341112-85968b19335b?w=800
 ---
 
 Docker 已经成为现代软件开发的标配。本文从零开始，带你快速掌握 Docker 的核心概念和实战技巧。

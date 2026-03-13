@@ -5,7 +5,7 @@ tags:
   - Kafka
   - 消息队列
   - 分布式
-cover: https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800
+cover: https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800
 ---
 
 Kafka 是LinkedIn开源的分布式消息队列系统，以其高吞吐量和持久化特性广泛应用于大数据实时处理领域。本文深入解析Kafka的核心原理。

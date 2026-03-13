@@ -5,7 +5,7 @@ tags:
   - Redis
   - 缓存
   - 后端
-cover: /images/redis.jpg
+cover: https://images.unsplash.com/photo-1518432031352-d6fc5c10da5a?w=800
 ---
 
 Redis 为什么这么快？除了内存操作外，更重要的是它精心设计的数据结构。本文深入解析 Redis 的核心数据结构，帮你理解 Redis 高性能的秘密。
