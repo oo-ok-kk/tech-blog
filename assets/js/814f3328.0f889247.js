@@ -1,0 +1,1 @@
+"use strict";(globalThis.webpackChunktech_blog=globalThis.webpackChunktech_blog||[]).push([[472],{5513(e){e.exports=JSON.parse('{"title":"Recent posts","items":[{"title":"\u535a\u5ba2\u4e0a\u7ebf\u4e86\uff01","permalink":"/blog/hello-world","unlisted":false,"date":"2024-01-01T00:00:00.000Z"}]}')}}]);
