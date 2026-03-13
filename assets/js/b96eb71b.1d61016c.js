@@ -1,0 +1,1 @@
+"use strict";(globalThis.webpackChunktech_blog=globalThis.webpackChunktech_blog||[]).push([[307],{8094(l){l.exports=JSON.parse('{"tags":[{"label":"\u516c\u544a","permalink":"/tech-blog/blog/tags/\u516c\u544a","count":1},{"label":"\u535a\u5ba2","permalink":"/tech-blog/blog/tags/\u535a\u5ba2","count":1}]}')}}]);
