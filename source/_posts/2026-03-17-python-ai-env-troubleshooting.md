@@ -1,12 +1,18 @@
 ---
-title: Python AI 开发环境配置避坑指南：LlamaIndex 实战总结
+title: 🛠️ AI 工程实战日记：LlamaIndex + ChromaDB 环境配置避坑指南
 date: 2026-03-17 15:50:00
 tags:
   - Python
   - LlamaIndex
   - 环境配置
   - AI开发
+  - RAG
+  - ChromaDB
 categories: 技术笔记
+---
+
+> 📅 日期：2026-03-17 | 💻 设备：Mac mini (M 系列芯片) | 🎯 目标：搭建企业级 Agentic RAG（检索增强生成）系统底层环境
+
 ---
 
 # 遇到的问题与解决方案 (Troubleshooting Log)
