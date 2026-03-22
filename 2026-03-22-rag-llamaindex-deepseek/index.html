@@ -1,0 +1,206 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>从零到一：基于 LlamaIndex + DeepSeek 打造&quot;无尘级&quot;私有 RAG 知识库工程实践 | 技术博客</title><meta name="author" content="博主"><meta name="copyright" content="博主"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="引言：为什么我们需要”私有化” AI？在 2026 年的今天，大模型（LLM）已经成为了生产力标配。但作为开发者，我们始终面临一个核心矛盾：数据的便利性与隐私的安全性。 当你有一份包含核心业务逻辑的 PDF、一份敏感的个人简历，或是公司的内部技术文档时，你真的放心把它们直接喂给联网的公有云大模型吗？ 为了解决这个痛点，我近期开发并开源了 Private-AI-Knowledge-Base 项目。这">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从零到一：基于 LlamaIndex + DeepSeek 打造&quot;无尘级&quot;私有 RAG 知识库工程实践">
+<meta property="og:url" content="https://oo-ok-kk.github.io/2026-03-22-rag-llamaindex-deepseek/">
+<meta property="og:site_name" content="技术博客">
+<meta property="og:description" content="引言：为什么我们需要”私有化” AI？在 2026 年的今天，大模型（LLM）已经成为了生产力标配。但作为开发者，我们始终面临一个核心矛盾：数据的便利性与隐私的安全性。 当你有一份包含核心业务逻辑的 PDF、一份敏感的个人简历，或是公司的内部技术文档时，你真的放心把它们直接喂给联网的公有云大模型吗？ 为了解决这个痛点，我近期开发并开源了 Private-AI-Knowledge-Base 项目。这">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://oo-ok-kk.github.io/img/butterfly-icon.png">
+<meta property="article:published_time" content="2026-03-22T12:43:00.000Z">
+<meta property="article:modified_time" content="2026-03-22T12:44:29.874Z">
+<meta property="article:author" content="博主">
+<meta property="article:tag" content="AIWorkflow">
+<meta property="article:tag" content="DeepSeek">
+<meta property="article:tag" content="Docker">
+<meta property="article:tag" content="LlamaIndex">
+<meta property="article:tag" content="Python">
+<meta property="article:tag" content="RAG">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://oo-ok-kk.github.io/img/butterfly-icon.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "从零到一：基于 LlamaIndex + DeepSeek 打造\"无尘级\"私有 RAG 知识库工程实践",
+  "url": "https://oo-ok-kk.github.io/2026-03-22-rag-llamaindex-deepseek/",
+  "image": "https://oo-ok-kk.github.io/img/butterfly-icon.png",
+  "datePublished": "2026-03-22T12:43:00.000Z",
+  "dateModified": "2026-03-22T12:44:29.874Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "博主",
+      "url": "https://oo-ok-kk.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/tech-blog/img/favicon.png"><link rel="canonical" href="https://oo-ok-kk.github.io/2026-03-22-rag-llamaindex-deepseek/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/tech-blog/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/tech-blog/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '从零到一：基于 LlamaIndex + DeepSeek 打造"无尘级"私有 RAG 知识库工程实践',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 8.1.1"></head><body><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/tech-blog/"><span class="site-name">技术博客</span></a><a class="nav-page-title" href="/tech-blog/"><span class="site-name">从零到一：基于 LlamaIndex + DeepSeek 打造&quot;无尘级&quot;私有 RAG 知识库工程实践</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"></div></nav><div id="post-info"><h1 class="post-title">从零到一：基于 LlamaIndex + DeepSeek 打造&quot;无尘级&quot;私有 RAG 知识库工程实践</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-03-22T12:43:00.000Z" title="发表于 2026-03-22 20:43:00">2026-03-22</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-03-22T12:44:29.874Z" title="更新于 2026-03-22 20:44:29">2026-03-22</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/tech-blog/categories/%E6%8A%80%E6%9C%AF%E5%AE%9E%E8%B7%B5/">技术实践</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="引言：为什么我们需要”私有化”-AI？"><a href="#引言：为什么我们需要”私有化”-AI？" class="headerlink" title="引言：为什么我们需要”私有化” AI？"></a>引言：为什么我们需要”私有化” AI？</h2><p>在 2026 年的今天，大模型（LLM）已经成为了生产力标配。但作为开发者，我们始终面临一个核心矛盾：数据的便利性与隐私的安全性。</p>
+<p>当你有一份包含核心业务逻辑的 PDF、一份敏感的个人简历，或是公司的内部技术文档时，你真的放心把它们直接喂给联网的公有云大模型吗？</p>
+<p>为了解决这个痛点，我近期开发并开源了 Private-AI-Knowledge-Base 项目。这不仅是一个 RAG（检索增强生成）的 Demo，更是一次关于 AI Workflow 工程化的尝试。</p>
+<hr>
+<h2 id="一、技术选型：为什么是这个组合？"><a href="#一、技术选型：为什么是这个组合？" class="headerlink" title="一、技术选型：为什么是这个组合？"></a>一、技术选型：为什么是这个组合？</h2><p>在构建本项目时，我拒绝了单纯的”全家桶”方案，而是针对性能和工程落地进行了权衡：</p>
+<h3 id="1-核心框架：LlamaIndex"><a href="#1-核心框架：LlamaIndex" class="headerlink" title="1. 核心框架：LlamaIndex"></a>1. 核心框架：LlamaIndex</h3><p>相比于 LangChain 的博大精深，LlamaIndex 在处理”索引”和”检索”这两个 RAG 核心环节上更加纯粹和高效。它提供的 VectorStoreIndex 和高度抽象的 QueryEngine 让开发者能更专注于数据流本身。</p>
+<h3 id="2-推理大脑：DeepSeek-V3"><a href="#2-推理大脑：DeepSeek-V3" class="headerlink" title="2. 推理大脑：DeepSeek-V3"></a>2. 推理大脑：DeepSeek-V3</h3><p>在 2026 年，DeepSeek 凭借极高的性价比和出色的中文逻辑能力，成为了私有化部署的首选。通过 API 调用，我们既保留了顶级模型的推理能力，又通过本地 RAG 确保了核心隐私不外泄。</p>
+<h3 id="3-向量数据库：ChromaDB"><a href="#3-向量数据库：ChromaDB" class="headerlink" title="3. 向量数据库：ChromaDB"></a>3. 向量数据库：ChromaDB</h3><p>选择 ChromaDB 是因为它对轻量级项目的极致友好。它支持本地持久化，无需像 Pinecone 那样配置复杂的云端环境，非常适合部署在 Mac mini 或本地服务器上。</p>
+<hr>
+<h2 id="二、深度解析：RAG-管道的构建细节"><a href="#二、深度解析：RAG-管道的构建细节" class="headerlink" title="二、深度解析：RAG 管道的构建细节"></a>二、深度解析：RAG 管道的构建细节</h2><p>一个成熟的 RAG 系统绝不是简单的 File -&gt; Vector。在本项目中，我重点优化了以下两个阶段：</p>
+<h3 id="1-Ingestion-Pipeline（数据入库）"><a href="#1-Ingestion-Pipeline（数据入库）" class="headerlink" title="1. Ingestion Pipeline（数据入库）"></a>1. Ingestion Pipeline（数据入库）</h3><p><strong>痛点</strong>：传统的 PDF 解析器（如 PyPDF2）在处理多栏排版或带有特殊符号的文档时极易乱码，直接导致检索失效。</p>
+<p><strong>解决方案</strong>：集成 PyMuPDFReader。它能更精准地提取文本流，配合 LlamaIndex 的 NodeParser 进行语义分块（Chunking），确保每个 Context 块的完整性。</p>
+<h3 id="2-Retrieval-Generation（检索与生成）"><a href="#2-Retrieval-Generation（检索与生成）" class="headerlink" title="2. Retrieval &amp; Generation（检索与生成）"></a>2. Retrieval &amp; Generation（检索与生成）</h3><ul>
+<li><strong>语义检索</strong>：利用 BGE-small-zh 模型将用户提问转化为 512 维向量。</li>
+<li><strong>上下文增强</strong>：系统会自动从本地库检索 Top-K 个最相关的文档片段，将其注入 System Prompt，强制模型”按图索骥”，杜绝幻觉。</li>
+</ul>
+<hr>
+<h2 id="三、工程化实践：Docker-沙盒与环境洁癖"><a href="#三、工程化实践：Docker-沙盒与环境洁癖" class="headerlink" title="三、工程化实践：Docker 沙盒与环境洁癖"></a>三、工程化实践：Docker 沙盒与环境洁癖</h2><p>作为一名对系统环境有”洁癖”的开发者，我坚决反对直接在宿主机安装零散的依赖包。</p>
+<h3 id="1-为什么要用-Docker？"><a href="#1-为什么要用-Docker？" class="headerlink" title="1. 为什么要用 Docker？"></a>1. 为什么要用 Docker？</h3><ul>
+<li><strong>环境一致性</strong>：无论你是 M1&#x2F;M4 芯片的 Mac mini，还是 ROG 幻 16，只要有 Docker，运行效果完全一致。</li>
+<li><strong>安全隔离</strong>：AI 助手在一个独立的沙盒中运行。即使我实验性地接入了一些第三方插件，它也无法触碰我系统底层的隐私。</li>
+</ul>
+<h3 id="2-自动化调度脚本"><a href="#2-自动化调度脚本" class="headerlink" title="2. 自动化调度脚本"></a>2. 自动化调度脚本</h3><p>为了解决”前后端分离部署”的繁琐，我编写了 start.command 脚本：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 同时启动 FastAPI 后端服务与 Streamlit 交互前端</span></span><br><span class="line">python server.py &amp; streamlit run web_app.py --server.port 8501</span><br></pre></td></tr></table></figure>
+
+<p>这种一键化的思路，正是 AI Workflow Engineer 核心竞争力的体现——将复杂的任务流转化为简单的自动化操作。</p>
+<hr>
+<h2 id="四、避坑指南：我踩过的那些雷"><a href="#四、避坑指南：我踩过的那些雷" class="headerlink" title="四、避坑指南：我踩过的那些雷"></a>四、避坑指南：我踩过的那些雷</h2><h3 id="1-环境变量泄露"><a href="#1-环境变量泄露" class="headerlink" title="1. 环境变量泄露"></a>1. 环境变量泄露</h3><p>千万不要在代码里硬编码 API Key！我通过 .env 文件配合 os.environ 实现了 Key 的动态读取，并在 .gitignore 中彻底屏蔽，确保代码开源后的安全。</p>
+<h3 id="2-PDF-幻觉"><a href="#2-PDF-幻觉" class="headerlink" title="2. PDF 幻觉"></a>2. PDF 幻觉</h3><p>如果发现 AI 睁眼说瞎话，大概率是分块（Chunk Size）太小导致语义断裂。建议在 Settings 中将 chunk_size 调整到 512-1024 之间。</p>
+<hr>
+<h2 id="五、结语与未来展望"><a href="#五、结语与未来展望" class="headerlink" title="五、结语与未来展望"></a>五、结语与未来展望</h2><p>目前的版本实现了一个标准的 Linear RAG 流程。下一步，我计划引入 Agentic RAG 架构：</p>
+<ul>
+<li>增加”意图识别”环节，让 AI 决定是去查文档还是直接回答。</li>
+<li>支持多文档对比分析，而不仅仅是简单的单点检索。</li>
+</ul>
+<p>如果你也对 AI 工程化感兴趣，欢迎访问我的 GitHub 仓库进行交流。</p>
+<h2 id="📍-项目地址"><a href="#📍-项目地址" class="headerlink" title="📍 项目地址"></a>📍 项目地址</h2><p>👉 <a target="_blank" rel="noopener" href="https://github.com/oo-ok-kk/Private-AI-Knowledge-Base">oo-ok-kk&#x2F;Private-AI-Knowledge-Base</a></p>
+<hr>
+<p>#AIWorkflow #RAG #DeepSeek #LlamaIndex #Docker #Python</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://oo-ok-kk.github.io">博主</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://oo-ok-kk.github.io/2026-03-22-rag-llamaindex-deepseek/">https://oo-ok-kk.github.io/2026-03-22-rag-llamaindex-deepseek/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://oo-ok-kk.github.io" target="_blank">技术博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tech-blog/tags/Python/">Python</a><a class="post-meta__tags" href="/tech-blog/tags/LlamaIndex/">LlamaIndex</a><a class="post-meta__tags" href="/tech-blog/tags/RAG/">RAG</a><a class="post-meta__tags" href="/tech-blog/tags/AIWorkflow/">AIWorkflow</a><a class="post-meta__tags" href="/tech-blog/tags/DeepSeek/">DeepSeek</a><a class="post-meta__tags" href="/tech-blog/tags/Docker/">Docker</a></div><div class="post-share"><div class="social-share" data-image="/tech-blog/img/butterfly-icon.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/tech-blog/2026-03-17-python-ai-env-troubleshooting/" title="🛠️ AI 工程实战日记：LlamaIndex + ChromaDB 环境配置避坑指南"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">🛠️ AI 工程实战日记：LlamaIndex + ChromaDB 环境配置避坑指南</div></div><div class="info-2"><div class="info-item-1"> 📅 日期：2026-03-17 | 💻 设备：Mac mini (M 系列芯片) | 🎯 目标：搭建企业级 Agentic RAG（检索增强生成）系统底层环境   遇到的问题与解决方案 (Troubleshooting Log) 记录人：haver-seed | 2026年3月   陷阱一：Pip 版本过低导致无法解析现代 AI 库现象：执行安装命令时报错 Could not find a version that satisfies the requirement... 原因：默认 Pip 版本（如 21.x）无法正确解析 2026 年复杂的现代化 Python 包依赖树。 解决方案： 1python3 -m pip install --upgrade pip   陷阱二：海外源网络连接超时 (ReadTimeoutError)现象：安装过程中进度条卡住，最终抛出 HTTPSConnectionPool... Read timed out 原因：AI 库体积较大，直接连接 PyPI 官方源在特定网络环境下极不稳定。 解决方案：使用国内高性能镜像站（如清华大学或阿里云）。...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/tech-blog/2026-03-17-python-ai-env-troubleshooting/" title="🛠️ AI 工程实战日记：LlamaIndex + ChromaDB 环境配置避坑指南"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-03-17</div><div class="info-item-2">🛠️ AI 工程实战日记：LlamaIndex + ChromaDB 环境配置避坑指南</div></div><div class="info-2"><div class="info-item-1"> 📅 日期：2026-03-17 | 💻 设备：Mac mini (M 系列芯片) | 🎯 目标：搭建企业级 Agentic RAG（检索增强生成）系统底层环境   遇到的问题与解决方案 (Troubleshooting Log) 记录人：haver-seed | 2026年3月   陷阱一：Pip 版本过低导致无法解析现代 AI 库现象：执行安装命令时报错 Could not find a version that satisfies the requirement... 原因：默认 Pip 版本（如 21.x）无法正确解析 2026 年复杂的现代化 Python 包依赖树。 解决方案： 1python3 -m pip install --upgrade pip   陷阱二：海外源网络连接超时 (ReadTimeoutError)现象：安装过程中进度条卡住，最终抛出 HTTPSConnectionPool... Read timed out 原因：AI 库体积较大，直接连接 PyPI 官方源在特定网络环境下极不稳定。 解决方案：使用国内高性能镜像站（如清华大学或阿里云）。...</div></div></div></a><a class="pagination-related" href="/tech-blog/Docker%E5%85%A5%E9%97%A8%E4%B8%8E%E5%AE%9E%E6%88%98/" title="Docker 入门与实战：打造你的第一个容器化应用"><img class="cover" src="https://images.unsplash.com/photo-1605745341112-85968b19335b?w=800" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-03-01</div><div class="info-item-2">Docker 入门与实战：打造你的第一个容器化应用</div></div><div class="info-2"><div class="info-item-1">Docker 已经成为现代软件开发的标配。本文从零开始，带你快速掌握 Docker 的核心概念和实战技巧。 一、Docker 核心概念1. 镜像（Image）镜像是一个只读的模板，用来创建容器。可以理解为面向对象的”类”。 12345678# 拉取镜像docker pull nginx:latest# 查看镜像docker images# 删除镜像docker rmi nginx:latest  2. 容器（Container）容器是镜像的运行实例。可以理解为面向对象的”对象”。 1234567891011121314# 创建并运行容器docker run -d -p 8080:80 --name mynginx nginx# 查看运行中的容器docker ps# 查看所有容器docker ps -a# 停止容器docker stop mynginx# 删除容器docker rm mynginx  3. 仓库（Repository）存放镜像的地方，最常用的是 Docker Hub。 123456# 登录 Docker Hubdocker login# 推送镜像docker tag...</div></div></div></a></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/tech-blog/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/tech-blog/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">博主</div><div class="author-info-description">后端开发技术博客</div><div class="site-data"><a href="/tech-blog/archives/"><div class="headline">文章</div><div class="length-num">11</div></a><a href="/tech-blog/tags/"><div class="headline">标签</div><div class="length-num">31</div></a><a href="/tech-blog/categories/"><div class="headline">分类</div><div class="length-num">2</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%95%E8%A8%80%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E6%88%91%E4%BB%AC%E9%9C%80%E8%A6%81%E2%80%9D%E7%A7%81%E6%9C%89%E5%8C%96%E2%80%9D-AI%EF%BC%9F"><span class="toc-number">1.</span> <span class="toc-text">引言：为什么我们需要”私有化” AI？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E6%8A%80%E6%9C%AF%E9%80%89%E5%9E%8B%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E6%98%AF%E8%BF%99%E4%B8%AA%E7%BB%84%E5%90%88%EF%BC%9F"><span class="toc-number">2.</span> <span class="toc-text">一、技术选型：为什么是这个组合？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E6%A0%B8%E5%BF%83%E6%A1%86%E6%9E%B6%EF%BC%9ALlamaIndex"><span class="toc-number">2.1.</span> <span class="toc-text">1. 核心框架：LlamaIndex</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E6%8E%A8%E7%90%86%E5%A4%A7%E8%84%91%EF%BC%9ADeepSeek-V3"><span class="toc-number">2.2.</span> <span class="toc-text">2. 推理大脑：DeepSeek-V3</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93%EF%BC%9AChromaDB"><span class="toc-number">2.3.</span> <span class="toc-text">3. 向量数据库：ChromaDB</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90%EF%BC%9ARAG-%E7%AE%A1%E9%81%93%E7%9A%84%E6%9E%84%E5%BB%BA%E7%BB%86%E8%8A%82"><span class="toc-number">3.</span> <span class="toc-text">二、深度解析：RAG 管道的构建细节</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-Ingestion-Pipeline%EF%BC%88%E6%95%B0%E6%8D%AE%E5%85%A5%E5%BA%93%EF%BC%89"><span class="toc-number">3.1.</span> <span class="toc-text">1. Ingestion Pipeline（数据入库）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-Retrieval-Generation%EF%BC%88%E6%A3%80%E7%B4%A2%E4%B8%8E%E7%94%9F%E6%88%90%EF%BC%89"><span class="toc-number">3.2.</span> <span class="toc-text">2. Retrieval &amp; Generation（检索与生成）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%B7%A5%E7%A8%8B%E5%8C%96%E5%AE%9E%E8%B7%B5%EF%BC%9ADocker-%E6%B2%99%E7%9B%92%E4%B8%8E%E7%8E%AF%E5%A2%83%E6%B4%81%E7%99%96"><span class="toc-number">4.</span> <span class="toc-text">三、工程化实践：Docker 沙盒与环境洁癖</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E7%94%A8-Docker%EF%BC%9F"><span class="toc-number">4.1.</span> <span class="toc-text">1. 为什么要用 Docker？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E8%87%AA%E5%8A%A8%E5%8C%96%E8%B0%83%E5%BA%A6%E8%84%9A%E6%9C%AC"><span class="toc-number">4.2.</span> <span class="toc-text">2. 自动化调度脚本</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E9%81%BF%E5%9D%91%E6%8C%87%E5%8D%97%EF%BC%9A%E6%88%91%E8%B8%A9%E8%BF%87%E7%9A%84%E9%82%A3%E4%BA%9B%E9%9B%B7"><span class="toc-number">5.</span> <span class="toc-text">四、避坑指南：我踩过的那些雷</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E6%B3%84%E9%9C%B2"><span class="toc-number">5.1.</span> <span class="toc-text">1. 环境变量泄露</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-PDF-%E5%B9%BB%E8%A7%89"><span class="toc-number">5.2.</span> <span class="toc-text">2. PDF 幻觉</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E7%BB%93%E8%AF%AD%E4%B8%8E%E6%9C%AA%E6%9D%A5%E5%B1%95%E6%9C%9B"><span class="toc-number">6.</span> <span class="toc-text">五、结语与未来展望</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%93%8D-%E9%A1%B9%E7%9B%AE%E5%9C%B0%E5%9D%80"><span class="toc-number">7.</span> <span class="toc-text">📍 项目地址</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/tech-blog/2026-03-22-rag-llamaindex-deepseek/" title="从零到一：基于 LlamaIndex + DeepSeek 打造&quot;无尘级&quot;私有 RAG 知识库工程实践">从零到一：基于 LlamaIndex + DeepSeek 打造&quot;无尘级&quot;私有 RAG 知识库工程实践</a><time datetime="2026-03-22T12:43:00.000Z" title="发表于 2026-03-22 20:43:00">2026-03-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/tech-blog/2026-03-17-python-ai-env-troubleshooting/" title="🛠️ AI 工程实战日记：LlamaIndex + ChromaDB 环境配置避坑指南">🛠️ AI 工程实战日记：LlamaIndex + ChromaDB 环境配置避坑指南</a><time datetime="2026-03-17T07:50:00.000Z" title="发表于 2026-03-17 15:50:00">2026-03-17</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/tech-blog/Go%E8%AF%AD%E8%A8%80%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98/" title="Go 语言并发编程实战"><img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800" onerror="this.onerror=null;this.src='/tech-blog/img/404.jpg'" alt="Go 语言并发编程实战"/></a><div class="content"><a class="title" href="/tech-blog/Go%E8%AF%AD%E8%A8%80%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E5%AE%9E%E6%88%98/" title="Go 语言并发编程实战">Go 语言并发编程实战</a><time datetime="2024-05-31T16:00:00.000Z" title="发表于 2024-06-01 00:00:00">2024-06-01</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/tech-blog/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3HTTPS%E5%92%8CTLS%E5%8D%8F%E8%AE%AE/" title="深入理解 HTTPS 和 TLS 协议"><img src="https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=800" onerror="this.onerror=null;this.src='/tech-blog/img/404.jpg'" alt="深入理解 HTTPS 和 TLS 协议"/></a><div class="content"><a class="title" href="/tech-blog/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3HTTPS%E5%92%8CTLS%E5%8D%8F%E8%AE%AE/" title="深入理解 HTTPS 和 TLS 协议">深入理解 HTTPS 和 TLS 协议</a><time datetime="2024-04-30T16:00:00.000Z" title="发表于 2024-05-01 00:00:00">2024-05-01</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/tech-blog/Kafka%E6%A0%B8%E5%BF%83%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98/" title="Kafka 核心原理与实战"><img src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800" onerror="this.onerror=null;this.src='/tech-blog/img/404.jpg'" alt="Kafka 核心原理与实战"/></a><div class="content"><a class="title" href="/tech-blog/Kafka%E6%A0%B8%E5%BF%83%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E6%88%98/" title="Kafka 核心原理与实战">Kafka 核心原理与实战</a><time datetime="2024-03-31T16:00:00.000Z" title="发表于 2024-04-01 00:00:00">2024-04-01</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By 博主</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.1</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/tech-blog/js/utils.js?v=5.5.4"></script><script src="/tech-blog/js/main.js?v=5.5.4"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
